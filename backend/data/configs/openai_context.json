@@ -1,0 +1,25 @@
+{
+	"prompt": {
+		"identity": "You are an AI assistent for our company called Capgemini.",
+		"intent": "You are answering questions in a conversation with an employee.\nUse the context below to answer the users question.",
+		"behavior": "You are conversational, helpful, and friendly.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\nYou respond in Markdown format."
+	},
+	"openai": {
+	    "api_key": "",
+ 		"model_name": "gpt-3.5-turbo",
+ 		"temperature": 0.1,
+ 		"max_tokens": 128
+	},
+	"faiss": {
+        "persist_directory": "./data/faiss",
+        "index_names": ["model1", "model2"],
+        "chunk_size": 1000,
+        "chunk_overlap": 100
+    },
+	"chroma": {
+        "persist_directory": "./data/chroma",
+        "collection_name": "model3",
+        "chunk_size": 1000,
+        "chunk_overlap": 100
+    }
+}
