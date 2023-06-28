@@ -1,0 +1,13 @@
+# System Dependencies
+#   google-cloud-cli
+
+# Development Tools
+black==23.3.0
+pdoc==13.1.1
+
+# SaaS API
+google-cloud-aiplatform==1.26.1
+
+# ML Libraries
+langchain==0.0.216
+
