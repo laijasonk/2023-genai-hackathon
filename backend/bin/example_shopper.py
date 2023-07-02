@@ -6,14 +6,14 @@ import json
 
 # Path must be defined (e.g. PYTHONPATH="/path/to/repo/backend")
 sys.path.append(os.path.abspath("./"))
-from src.models import vertexai_fashion
+from src.models import vertexai_shopper
 
 # Load the config
-with open("./data/configs/vertexai_fashion.json", "r") as fn:
+with open("./data/configs/vertexai_shopper.json", "r") as fn:
     config = json.load(fn)
 
 # Initialize the chatbot
-chatbot = vertexai_fashion.VertexAIFashion(config)
+chatbot = vertexai_shopper.VertexAIShopper(config)
 
 # Introductory text
 print("Starting example AI chatbot")

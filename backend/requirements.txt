@@ -6,12 +6,15 @@ black==23.3.0
 pdoc==13.1.1
 
 # SaaS API
-google-cloud-aiplatform==1.26.1
+google-cloud-aiplatform==1.27.0
 
 # PaLM 2 Dependencies
-langchain==0.0.216
+langchain==0.0.220
 pycocotools==2.0.6
 
-# Stable Diffusion Dependencies
-keras-cv==0.4.1
-tensorflow==2.12.0
+# # Stable Diffusion Dependencies
+# keras-cv
+# tensorflow
+
+# Prototyping UI
+streamlit-chat==0.1.1
