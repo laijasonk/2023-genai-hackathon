@@ -140,7 +140,8 @@ pdoc -d "google" -o ./doc ./src
 __all__ = [
     "models",
     "models.vertexai_basic",
-    "models.vertexai_fashion",
+    "models.vertexai_shopper",
+    "models.vertexai_styleguide",
     "utils",
     "vectorstore",
 ]

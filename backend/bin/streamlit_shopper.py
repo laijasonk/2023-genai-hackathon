@@ -8,6 +8,7 @@ from streamlit_chat import message
 # Path must be defined (e.g. PYTHONPATH="/path/to/repo/backend")
 sys.path.append(os.path.abspath("./"))
 from src.models import vertexai_shopper
+from src.models import vertexai_styleguide
 
 
 ##################################################
@@ -42,7 +43,8 @@ chatbot = vertexai_shopper.VertexAIShopper(config)
 
 def generate_response(user_input):
     chatbot.add_streamlit_history(
-        streamlit.session_state["past"], streamlit.session_state["generated"]
+        streamlit.session_state["past"],
+        streamlit.session_state["generated"],
     )
     response = chatbot.add_user_input(user_input)
     print(response)
@@ -128,6 +130,53 @@ def _validate_demographics(response, demographics):
     return None
 
 
+def generate_style_guide():
+    # Load the config
+    with open("./data/configs/vertexai_styleguide.json", "r") as fn:
+        config = json.load(fn)
+
+    # Initialize the model
+    model = vertexai_styleguide.VertexAIStyleGuide(config)
+
+    # Pass customer insights into model
+    model.customer_insights = {
+        "gender": streamlit.session_state["gender"],
+        "age": streamlit.session_state["age"],
+        "income": streamlit.session_state["income"],
+        "style": streamlit.session_state["style"],
+        "outerwear1": streamlit.session_state["outerwear1"],
+        "outerwear2": streamlit.session_state["outerwear2"],
+        "outerwear3": streamlit.session_state["outerwear3"],
+        "top1": streamlit.session_state["top1"],
+        "top2": streamlit.session_state["top2"],
+        "top3": streamlit.session_state["top3"],
+        "bottom1": streamlit.session_state["bottom1"],
+        "bottom2": streamlit.session_state["bottom2"],
+        "bottom3": streamlit.session_state["bottom3"],
+    }
+
+    # Setup model
+    model.use_default_template()
+    model.setup_model()
+
+    # Get response
+    response = model.add_user_input(model.customer_insights)
+
+    # Create powerpoint
+    model.generate_powerpoint(response, "./style_guide.pptx")
+
+    # Allow downloading
+    with open("style_guide.pptx", "rb") as file:
+        download_style_button = style2.download_button(
+            label="Download Style Guide",
+            data=file,
+            file_name="style_guide.pptx",
+            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        )
+
+    return True
+
+
 ##################################################
 #
 # Persistent/Session Variables
@@ -190,13 +239,21 @@ recommendation1 = clothing1.text(f"Outer:\nTop:\nBottom:")
 recommendation2 = clothing2.text(f"Outer:\nTop:\nBottom:")
 recommendation3 = clothing3.text(f"Outer:\nTop:\nBottom:")
 
+# Sidebar button states
+generate_style_button = False
+download_style_button = False
+
 # Sidebar (hidden by default)
 streamlit.sidebar.title("Customer Insights")
 demographics1 = streamlit.sidebar.text(f"Guessed Gender:")
 demographics2 = streamlit.sidebar.text(f"Guessed Age:")
 demographics3 = streamlit.sidebar.text(f"Guessed Income:")
 demographics4 = streamlit.sidebar.text(f"Guessed Style:")
-
+streamlit.sidebar.markdown("""---""")
+style1, style2 = streamlit.sidebar.columns(2)
+generate_style_button = style1.button("Generate Style Guide")
+if generate_style_button:
+    download_style_button = generate_style_guide()
 
 ##################################################
 #
@@ -234,6 +291,12 @@ if user_input:
     demographics2.text(f"Guessed Age: {streamlit.session_state['age']}")
     demographics3.text(f"Guessed Income: {streamlit.session_state['income']}")
     demographics4.text(f"Guessed Style: {streamlit.session_state['style']}")
+
+elif generate_style_button:
+    pass
+
+elif download_style_button:
+    pass
 
 else:
     streamlit.session_state.past.append("Hi")

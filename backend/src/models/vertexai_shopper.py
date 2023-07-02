@@ -41,10 +41,10 @@ class VertexAIShopper(ChatBot):
         "top_color": [],
         "bottom": [],
         "bottom_color": [],
-        "customer_gender": None,
-        "customer_age": None,
-        "customer_income": None,
-        "customer_style": None,
+        "customer_gender": "",
+        "customer_age": "",
+        "customer_income": "",
+        "customer_style": "",
     }
 
     def use_default_template(self):
@@ -126,54 +126,11 @@ class VertexAIShopper(ChatBot):
         self.history.append([user_input, output["response"]])
         self.memory = self._memory()
         for entry in self.history:
-            outerwear = ""
-            outerwear = (
-                self.config["prompt"]
-                .get("outerwear", {})
-                .get(str(output["outerwear"]), "none")
-            )
-            outerwear_color = (
-                self.config["prompt"]
-                .get("outerwear_color", {})
-                .get(str(output["outerwear_color"]), "white")
-            )
-            top = (
-                self.config["prompt"].get("top", {}).get(str(output["top"]), "t-shirt")
-            )
-            top_color = (
-                self.config["prompt"]
-                .get("top_color", {})
-                .get(str(output["top_color"]), "white")
-            )
-            bottom = (
-                self.config["prompt"]
-                .get("bottom", {})
-                .get(str(output["bottom"]), "shorts")
-            )
-            bottom_color = (
-                self.config["prompt"]
-                .get("bottom_color", {})
-                .get(str(output["bottom_color"]), "white")
-            )
-
-            prompt_outerwear = ""
-            prompt_top = ""
-            prompt_bottom = ""
-
-            if not outerwear == "none":
-                prompt_outerwear = f"{outerwear_color} {outerwear} over "
-
-            prompt_top = f"{top_color} {top}"
-            if not str(top) == "dress":
-                bottom = f"and {bottom_color} {bottom}"
-
-            user_input = (
-                # f"I was recommended the following clothing: {prompt_outerwear}{prompt_top}{prompt_bottom}. " +
-                entry[0]
-            )
+            user_input = entry[0]
             response = entry[1]
             self.memory.save_context(
-                {self.memory.input_key: user_input}, {self.memory.output_key: response}
+                {self.memory.input_key: user_input},
+                {self.memory.output_key: str(response)},
             )
 
         return output
@@ -257,7 +214,7 @@ class VertexAIShopper(ChatBot):
             template (str): Text template for prompt
         """
 
-        template = f"{self.identity}\n{self.intent}\n{self.behavior}\n---------------\n{{history}}\n---------------\n{{format_instructions}}\n{{user_input}}\n"
+        template = f"{self.identity}\n{self.intent}\n{self.behavior}\n---------------\nUse the following conversation as context.\n{{history}}\n---------------\nUsing the above conversation as context, follow the instructions below.\n{{format_instructions}}\n{{user_input}}\n"
         return template
 
     def _prompt(self):
@@ -376,7 +333,7 @@ class VertexAIShopper(ChatBot):
 
         return prompt
 
-    def add_streamlit_history(self, past=[], generated=[]):
+    def add_streamlit_history(self, past, generated):
         """Append streamlit history to LangChain memory object.
 
         Args:

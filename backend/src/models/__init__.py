@@ -35,8 +35,11 @@ class ChatBot:
         """
 
         self.config = config
-        self.use_default_template()
-        self.setup_model()
+        try:
+            self.use_default_template()
+            self.setup_model()
+        except:
+            pass
 
         return None
 
@@ -264,5 +267,6 @@ class ChatBot:
 
 __all__ = [
     "vertexai_basic",
-    "vertexai_fashion",
+    "vertexai_shopper",
+    "vertexai_styleguide",
 ]
