@@ -261,6 +261,7 @@ class ChatBot:
 
         return None
 
+
 __all__ = [
     "vertexai_basic",
     "vertexai_fashion",

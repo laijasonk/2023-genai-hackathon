@@ -12,7 +12,7 @@ $ gcloud auth application-default set-quota-project gen-hybrid-intelligence-team
 import os
 import sys
 
-# AI imports 
+# AI imports
 from google.cloud import aiplatform
 from keras_cv.models import StableDiffusion
 
@@ -36,7 +36,7 @@ RESOLUTION = 256
 aiplatform.init(project=PROJECT_ID, location=REGION, staging_bucket=STAGING_BUCKET)
 
 # Create model
-model_path = "" # Empty path uses default Keras model
+model_path = ""  # Empty path uses default Keras model
 model = StableDiffusion(img_height=RESOLUTION, img_width=RESOLUTION, jit_compile=True)
 if model_path:
     model.diffusion_model.load_weights(model_path)
@@ -44,7 +44,7 @@ if model_path:
 # Create
 batch_size = 1
 img = model.text_to_image(
-    #prompt="headless mannequin display with a black dress and long-sleeves",
+    # prompt="headless mannequin display with a black dress and long-sleeves",
     prompt="female model wearing a black dress and long-sleeves",
     batch_size=batch_size,
     num_steps=25,
@@ -53,4 +53,3 @@ img = model.text_to_image(
 
 for idx in range(batch_size):
     Image.fromarray(img[idx]).save(f"./image_{idx}.jpg")
-

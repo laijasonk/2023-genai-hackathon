@@ -2,57 +2,83 @@ import os
 import sys
 import json
 
-import streamlit as st
+import streamlit
 from streamlit_chat import message
 
 # Path must be defined (e.g. PYTHONPATH="/path/to/repo/backend")
 sys.path.append(os.path.abspath("./"))
 from src.models import vertexai_shopper
 
+
+##################################################
+#
+# Configuration
+#
+##################################################
+
 # Load the config
 with open("./data/configs/vertexai_shopper.json", "r") as fn:
     config = json.load(fn)
 
 # Config streamlit
-st.set_page_config(
+streamlit.set_page_config(
     page_title="Personal Shopper",
     page_icon=None,
     layout="centered",
     initial_sidebar_state="collapsed",
-    menu_items=None
+    menu_items=None,
 )
 
 # Initialize the chatbot
 chatbot = vertexai_shopper.VertexAIShopper(config)
 
-# Functions
+
+##################################################
+#
+# Helper Functions
+#
+##################################################
+
+
 def generate_response(user_input):
-    chatbot.add_streamlit_history(st.session_state["past"], st.session_state["generated"])
+    chatbot.add_streamlit_history(
+        streamlit.session_state["past"], streamlit.session_state["generated"]
+    )
     response = chatbot.add_user_input(user_input)
     print(response)
     return response
 
+
 def get_text():
-    # input_text = st.text_input("You: ", "Hello, how are you?", key="input")
-    input_text = st.text_input("You: ", key="input", on_change=on_submit_text)
-    return st.session_state["prompt"]
+    # input_text = streamlit.text_input("You: ", "Hello, how are you?", key="input")
+    input_text = streamlit.text_input("You: ", key="input", on_change=on_submit_text)
+    return streamlit.session_state["prompt"]
+
 
 def on_submit_text():
-    st.session_state["prompt"] = st.session_state["input"]
-    st.session_state["input"] = ""
+    streamlit.session_state["prompt"] = streamlit.session_state["input"]
+    streamlit.session_state["input"] = ""
     return None
+
 
 def set_recommendations(response):
     _validate_recommendation(response, "outerwear")
     _validate_recommendation(response, "top")
     _validate_recommendation(response, "bottom")
-    if "dress" in st.session_state["top1"]: st.session_state["bottom1"] = st.session_state["top1"]
-    if "dress" in st.session_state["top2"]: st.session_state["bottom2"] = st.session_state["top2"]
-    if "dress" in st.session_state["top3"]: st.session_state["bottom3"] = st.session_state["top3"]
-    if "dress" in st.session_state["bottom1"]: st.session_state["top1"] = st.session_state["bottom1"]
-    if "dress" in st.session_state["bottom2"]: st.session_state["top2"] = st.session_state["bottom2"]
-    if "dress" in st.session_state["bottom3"]: st.session_state["top3"] = st.session_state["bottom3"]
+    if "dress" in streamlit.session_state["top1"]:
+        streamlit.session_state["bottom1"] = streamlit.session_state["top1"]
+    if "dress" in streamlit.session_state["top2"]:
+        streamlit.session_state["bottom2"] = streamlit.session_state["top2"]
+    if "dress" in streamlit.session_state["top3"]:
+        streamlit.session_state["bottom3"] = streamlit.session_state["top3"]
+    if "dress" in streamlit.session_state["bottom1"]:
+        streamlit.session_state["top1"] = streamlit.session_state["bottom1"]
+    if "dress" in streamlit.session_state["bottom2"]:
+        streamlit.session_state["top2"] = streamlit.session_state["bottom2"]
+    if "dress" in streamlit.session_state["bottom3"]:
+        streamlit.session_state["top3"] = streamlit.session_state["bottom3"]
     return None
+
 
 def _validate_recommendation(response, clothing):
     try:
@@ -68,15 +94,22 @@ def _validate_recommendation(response, clothing):
         else:
             response[clothing + "_color"] = ["", ""]
 
-        st.session_state[clothing + "1"] = f"{response[clothing + '_color'][0]} {response[clothing][0]}"
-        st.session_state[clothing + "2"] = f"{response[clothing + '_color'][0]} {response[clothing][1]}"
-        st.session_state[clothing + "3"] = f"{response[clothing + '_color'][1]} {response[clothing][0]}"
+        streamlit.session_state[
+            clothing + "1"
+        ] = f"{response[clothing + '_color'][0]} {response[clothing][0]}"
+        streamlit.session_state[
+            clothing + "2"
+        ] = f"{response[clothing + '_color'][0]} {response[clothing][1]}"
+        streamlit.session_state[
+            clothing + "3"
+        ] = f"{response[clothing + '_color'][1]} {response[clothing][0]}"
     except:
-        st.session_state[clothing + "1"] = ""
-        st.session_state[clothing + "2"] = ""
-        st.session_state[clothing + "3"] = ""
-    
+        streamlit.session_state[clothing + "1"] = ""
+        streamlit.session_state[clothing + "2"] = ""
+        streamlit.session_state[clothing + "3"] = ""
+
     return None
+
 
 def set_demographics(response):
     _validate_demographics(response, "gender")
@@ -85,73 +118,143 @@ def set_demographics(response):
     _validate_demographics(response, "style")
     return None
 
+
 def _validate_demographics(response, demographics):
     try:
-        st.session_state[demographics] = response["customer_" + demographics]
+        streamlit.session_state[demographics] = response["customer_" + demographics]
     except:
-        st.session_state[demographics] = ""
-    
+        streamlit.session_state[demographics] = ""
+
     return None
 
-# Creating the chatbot interface
-st.title("Personal Clothing Shopper")
 
-# Storing the chat
-if "past" not in st.session_state: st.session_state["past"] = []
-if "generated" not in st.session_state: st.session_state["generated"] = []
-if "prompt" not in st.session_state: st.session_state["prompt"] = ""
+##################################################
+#
+# Persistent/Session Variables
+#
+##################################################
 
-if "outerwear1" not in st.session_state: st.session_state["outerwear1"] = ""
-if "outerwear2" not in st.session_state: st.session_state["outerwear2"] = ""
-if "outerwear3" not in st.session_state: st.session_state["outerwear3"] = ""
-if "top1" not in st.session_state: st.session_state["top1"] = ""
-if "top2" not in st.session_state: st.session_state["top2"] = ""
-if "top3" not in st.session_state: st.session_state["top3"] = ""
-if "bottom1" not in st.session_state: st.session_state["bottom1"] = ""
-if "bottom2" not in st.session_state: st.session_state["bottom2"] = ""
-if "bottom3" not in st.session_state: st.session_state["bottom3"] = ""
+# Chat history
+if "past" not in streamlit.session_state:
+    streamlit.session_state["past"] = []
+if "generated" not in streamlit.session_state:
+    streamlit.session_state["generated"] = []
 
-if "gender" not in st.session_state: st.session_state["gender"] = ""
-if "age" not in st.session_state: st.session_state["age"] = ""
-if "income" not in st.session_state: st.session_state["income"] = ""
-if "style" not in st.session_state: st.session_state["style"] = ""
+# Current input prompt
+if "prompt" not in streamlit.session_state:
+    streamlit.session_state["prompt"] = ""
 
-clothing1, clothing2, clothing3 = st.columns(3)
+# Current clothing recommendation
+if "outerwear1" not in streamlit.session_state:
+    streamlit.session_state["outerwear1"] = ""
+if "outerwear2" not in streamlit.session_state:
+    streamlit.session_state["outerwear2"] = ""
+if "outerwear3" not in streamlit.session_state:
+    streamlit.session_state["outerwear3"] = ""
+if "top1" not in streamlit.session_state:
+    streamlit.session_state["top1"] = ""
+if "top2" not in streamlit.session_state:
+    streamlit.session_state["top2"] = ""
+if "top3" not in streamlit.session_state:
+    streamlit.session_state["top3"] = ""
+if "bottom1" not in streamlit.session_state:
+    streamlit.session_state["bottom1"] = ""
+if "bottom2" not in streamlit.session_state:
+    streamlit.session_state["bottom2"] = ""
+if "bottom3" not in streamlit.session_state:
+    streamlit.session_state["bottom3"] = ""
+
+# Customer insights
+if "gender" not in streamlit.session_state:
+    streamlit.session_state["gender"] = ""
+if "age" not in streamlit.session_state:
+    streamlit.session_state["age"] = ""
+if "income" not in streamlit.session_state:
+    streamlit.session_state["income"] = ""
+if "style" not in streamlit.session_state:
+    streamlit.session_state["style"] = ""
+
+
+##################################################
+#
+# Streamlit App: Main Display
+#
+##################################################
+
+# Title text
+streamlit.title("Personal Clothing Shopper")
+
+# Recommendation
+clothing1, clothing2, clothing3 = streamlit.columns(3)
 recommendation1 = clothing1.text(f"Outer:\nTop:\nBottom:")
 recommendation2 = clothing2.text(f"Outer:\nTop:\nBottom:")
 recommendation3 = clothing3.text(f"Outer:\nTop:\nBottom:")
 
-st.sidebar.title("Customer Insights")
-demographics1 = st.sidebar.text(f"Guessed Gender:")
-demographics2 = st.sidebar.text(f"Guessed Age:")
-demographics3 = st.sidebar.text(f"Guessed Income:")
-demographics4 = st.sidebar.text(f"Guessed Style:")
+# Sidebar (hidden by default)
+streamlit.sidebar.title("Customer Insights")
+demographics1 = streamlit.sidebar.text(f"Guessed Gender:")
+demographics2 = streamlit.sidebar.text(f"Guessed Age:")
+demographics3 = streamlit.sidebar.text(f"Guessed Income:")
+demographics4 = streamlit.sidebar.text(f"Guessed Style:")
 
+
+##################################################
+#
+# Streamlit App: Chat Display
+#
+##################################################
+
+# User input
 user_input = get_text()
 
+# Handle input data
 if user_input:
+    # Get response from PaLM
     response = generate_response(user_input)
-    st.session_state.past.append(user_input)
-    st.session_state.generated.append(response["response"])
-    st.session_state["text"] = ""
-    
+
+    # Add user input and response to session
+    streamlit.session_state.past.append(user_input)
+    streamlit.session_state.generated.append(response["response"])
+
+    # Determine what clothing to suggest
     set_recommendations(response)
-    recommendation1.text(f"Outer: {st.session_state['outerwear1']}\nTop: {st.session_state['top1']}\nBottom: {st.session_state['bottom1']}")
-    recommendation2.text(f"Outer: {st.session_state['outerwear2']}\nTop: {st.session_state['top2']}\nBottom: {st.session_state['bottom2']}")
-    recommendation3.text(f"Outer: {st.session_state['outerwear3']}\nTop: {st.session_state['top3']}\nBottom: {st.session_state['bottom3']}")
+    recommendation1.text(
+        f"Outer: {streamlit.session_state['outerwear1']}\nTop: {streamlit.session_state['top1']}\nBottom: {streamlit.session_state['bottom1']}"
+    )
+    recommendation2.text(
+        f"Outer: {streamlit.session_state['outerwear2']}\nTop: {streamlit.session_state['top2']}\nBottom: {streamlit.session_state['bottom2']}"
+    )
+    recommendation3.text(
+        f"Outer: {streamlit.session_state['outerwear3']}\nTop: {streamlit.session_state['top3']}\nBottom: {streamlit.session_state['bottom3']}"
+    )
 
+    # Guess some customer insights
     set_demographics(response)
-    demographics1.text(f"Guessed Gender: {st.session_state['gender']}")
-    demographics2.text(f"Guessed Age: {st.session_state['age']}")
-    demographics3.text(f"Guessed Income: {st.session_state['income']}")
-    demographics4.text(f"Guessed Style: {st.session_state['style']}")
+    demographics1.text(f"Guessed Gender: {streamlit.session_state['gender']}")
+    demographics2.text(f"Guessed Age: {streamlit.session_state['age']}")
+    demographics3.text(f"Guessed Income: {streamlit.session_state['income']}")
+    demographics4.text(f"Guessed Style: {streamlit.session_state['style']}")
+
 else:
-    st.session_state.past.append("Hi")
-    st.session_state.generated.append("I am your personal clothing shopper! How can I help you?")
+    streamlit.session_state.past.append("Hi")
+    streamlit.session_state.generated.append(
+        "I am your personal clothing shopper! How can I help you?"
+    )
 
-if st.session_state["generated"]:
-    for i in range(len(st.session_state["generated"]) - 1, -1, -1):
-        message(st.session_state["generated"][i], avatar_style="avataaars", seed=1234, key=str(i))
+# Display the chatbot message history
+if streamlit.session_state["generated"]:
+    for i in range(len(streamlit.session_state["generated"]) - 1, -1, -1):
+        message(
+            streamlit.session_state["generated"][i],
+            avatar_style="avataaars",
+            seed=1234,
+            key=str(i),
+        )
         if not i == 0:
-            message(st.session_state["past"][i], avatar_style="icons", seed=1234, is_user=True, key=str(i) + "_user")
-
+            message(
+                streamlit.session_state["past"][i],
+                avatar_style="icons",
+                seed=1234,
+                is_user=True,
+                key=str(i) + "_user",
+            )

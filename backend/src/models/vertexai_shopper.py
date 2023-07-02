@@ -58,9 +58,7 @@ class VertexAIShopper(ChatBot):
 
         # Prepare prompt
         if not self.config.get("prompt", {}).get("identity", False):
-            self.identity = (
-                "You are a personal clothing shopper working for a company called Capgemini."
-            )
+            self.identity = "You are a personal clothing shopper working for a company called Capgemini."
         else:
             self.identity = self.config["prompt"]["identity"]
         if not self.config.get("prompt", {}).get("intent", False):
@@ -128,14 +126,35 @@ class VertexAIShopper(ChatBot):
         self.history.append([user_input, output["response"]])
         self.memory = self._memory()
         for entry in self.history:
-
             outerwear = ""
-            outerwear = self.config['prompt'].get('outerwear', {}).get(str(output['outerwear']), "none")
-            outerwear_color = self.config['prompt'].get('outerwear_color', {}).get(str(output['outerwear_color']), "white")
-            top = self.config['prompt'].get('top', {}).get(str(output['top']), "t-shirt")
-            top_color = self.config['prompt'].get('top_color', {}).get(str(output['top_color']), "white")
-            bottom = self.config['prompt'].get('bottom', {}).get(str(output['bottom']), "shorts")
-            bottom_color = self.config['prompt'].get('bottom_color', {}).get(str(output['bottom_color']), "white")
+            outerwear = (
+                self.config["prompt"]
+                .get("outerwear", {})
+                .get(str(output["outerwear"]), "none")
+            )
+            outerwear_color = (
+                self.config["prompt"]
+                .get("outerwear_color", {})
+                .get(str(output["outerwear_color"]), "white")
+            )
+            top = (
+                self.config["prompt"].get("top", {}).get(str(output["top"]), "t-shirt")
+            )
+            top_color = (
+                self.config["prompt"]
+                .get("top_color", {})
+                .get(str(output["top_color"]), "white")
+            )
+            bottom = (
+                self.config["prompt"]
+                .get("bottom", {})
+                .get(str(output["bottom"]), "shorts")
+            )
+            bottom_color = (
+                self.config["prompt"]
+                .get("bottom_color", {})
+                .get(str(output["bottom_color"]), "white")
+            )
 
             prompt_outerwear = ""
             prompt_top = ""
@@ -143,13 +162,13 @@ class VertexAIShopper(ChatBot):
 
             if not outerwear == "none":
                 prompt_outerwear = f"{outerwear_color} {outerwear} over "
-                
+
             prompt_top = f"{top_color} {top}"
             if not str(top) == "dress":
                 bottom = f"and {bottom_color} {bottom}"
 
             user_input = (
-                #f"I was recommended the following clothing: {prompt_outerwear}{prompt_top}{prompt_bottom}. " + 
+                # f"I was recommended the following clothing: {prompt_outerwear}{prompt_top}{prompt_bottom}. " +
                 entry[0]
             )
             response = entry[1]
@@ -261,7 +280,7 @@ class VertexAIShopper(ChatBot):
         customer_age = self.config.get("prompt", {}).get("customer_age", "")
         customer_income = self.config.get("prompt", {}).get("customer_income", "")
         customer_style = self.config.get("prompt", {}).get("customer_style", "")
-    
+
         response_schemas = [
             ResponseSchema(
                 name="response",
@@ -338,13 +357,15 @@ class VertexAIShopper(ChatBot):
         Returns:
             None
         """
-        
+
         prompt_options = "Consider the following as examples: {prompt_parts[1]}"
         option = 2
         while str(option) in prompt_parts:
             prompt_options += f", {prompt_parts[str(option)]}"
             option += 1
-        prompt = f"{prompt_parts['leading']} {prompt_options}. {prompt_parts['trailing']}"
+        prompt = (
+            f"{prompt_parts['leading']} {prompt_options}. {prompt_parts['trailing']}"
+        )
 
         # prompt_options = f"Using 0 for {prompt_parts['0']}"
         # option = 1
@@ -369,7 +390,7 @@ class VertexAIShopper(ChatBot):
         for idx in range(len(generated)):
             self.history.append([past[idx], generated[idx]])
             self.memory.save_context(
-                {self.memory.input_key: past[idx]}, {self.memory.output_key: generated[idx]}
+                {self.memory.input_key: past[idx]},
+                {self.memory.output_key: generated[idx]},
             )
         return None
-
