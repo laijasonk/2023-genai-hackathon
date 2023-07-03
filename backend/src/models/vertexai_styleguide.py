@@ -199,12 +199,12 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         tagline = f"Write a tagline to sell clothing to a {info['age']} year old {info['gender']} customer with {info['income']} income and a preference for {info['style']} fashion."
         brand = f"Make up a brand description for a clothing company tailored for {info['age']} year old {info['gender']} customers with {info['income']} income and a preference for {info['style']} fashion."
         style = f"Write a three sentence style guide containing fashion advice for a customer interested in buying {info['outerwear1']}, {info['top1']}, and {info['bottom1']}."
-        collection1 = f"Write a short product description in two sentences for a collection of containing {info['outerwear1']}, {info['top1']}, and {info['bottom1']}."
-        collection2 = f"Write a short product description in two sentences for a collection of containing {info['outerwear2']}, {info['top2']}, and {info['bottom2']}."
-        collection3 = f"Write a short product description in two sentences for a collection of containing {info['outerwear3']}, {info['top3']}, and {info['bottom3']}."
-        testimony1 = f"Make up a short one to two sentence customer testimony for a clothing company from a {info['gender']} customer who prefers the {info['style']} fashion style."
-        testimony2 = f"Make up a short one to two sentence customer testimony for a clothing company from a {info['gender']} {info['age']} year old customer."
-        testimony3 = f"Make up a short one to two sentence customer testimony for a clothing company from a {info['gender']} customer in a {info['income']} income bracket."
+        collection1 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear1']}, {info['top1']}, and {info['bottom1']}."
+        collection2 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear2']}, {info['top2']}, and {info['bottom2']}."
+        collection3 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear3']}, {info['top3']}, and {info['bottom3']}."
+        testimony1 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} customer who prefers the {info['style']} fashion style."
+        testimony2 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} {info['age']} year old customer."
+        testimony3 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} customer in a {info['income']} income bracket."
         conclusion = f"Write one sentence from the perspective of the company personally thanking this specific customer for their time."
 
         response_schemas = [
