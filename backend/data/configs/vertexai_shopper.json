@@ -5,7 +5,7 @@
 		"behavior": "You are friendly, conversational, and concise. You give unsolicited clothing recommendations every chance you get even if you do not have enough information about the customer.",
 		"response": "Continue the conversation with the customer and make clothing recommendations. Always try to give a recommendation of outerwear, clothing tops, and clothing bottoms where possible.",
         "outerwear": {
-            "leading": "Based on the conversation, return at least two outerwear clothing recommendations for the customer in an ordered comma-separated list. Do not include the color in this response.",
+            "leading": "Based on the conversation, return at least two outerwear clothing recommendations for the customer in an ordered comma-separated list. Exclude color in your answer.",
             "1": "none",
             "2": "jacket",
             "3": "sweater",
@@ -32,7 +32,7 @@
             "trailing": "Order the two choices from best to worst as a recommendation of outerwear clothing color for the customer."
         },
         "top": {
-            "leading": "Based on the conversation, return at least two clothing top recommendations for the customer in an ordered comma-separated list. Do not include the color in this response.",
+            "leading": "Based on the conversation, return at least two clothing top recommendations for the customer in an ordered comma-separated list. Exclude color in your answer.",
             "1": "t-shirt",
             "2": "buttoned shirt",
             "3": "formal shirt",
@@ -63,7 +63,7 @@
             "trailing": "Order the two choices from best to worst as a recommendation of clothing top color for the customer. Give more options unless you are certain about the recommendation."
         },
         "bottom": {
-            "leading": "Based on the conversation, return at least two clothing bottom recommendations for the customer in an ordered comma-separated list. Do not include the color in this response.",
+            "leading": "Based on the conversation, return at least two clothing bottom recommendations for the customer in an ordered comma-separated list. Exclude color in your answer.",
             "1": "shorts",
             "2": "dress",
             "3": "skirt",
@@ -94,7 +94,6 @@
             "leading": "Based on the conversation, return your best guess of the customer's gender.",
             "1": "female",
             "2": "male",
-            "3": "unisex",
             "trailing": ""
         },
         "customer_age": {
@@ -112,8 +111,9 @@
             "leading": "Based on the conversation, return your best guess about the customer's income group.",
             "1": "low income",
             "2": "medium-low income",
-            "3": "medium-high income",
-            "4": "high income",
+            "3": "medium income",
+            "4": "medium-high income",
+            "5": "high income",
             "trailing": ""
         },
         "customer_style": {

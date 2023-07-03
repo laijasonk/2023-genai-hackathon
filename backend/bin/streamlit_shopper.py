@@ -5,6 +5,9 @@ import json
 import streamlit
 from streamlit_chat import message
 
+import numpy
+from PIL import Image
+
 # Path must be defined (e.g. PYTHONPATH="/path/to/repo/backend")
 sys.path.append(os.path.abspath("./"))
 from src.models import vertexai_shopper
@@ -67,18 +70,6 @@ def set_recommendations(response):
     _validate_recommendation(response, "outerwear")
     _validate_recommendation(response, "top")
     _validate_recommendation(response, "bottom")
-    if "dress" in streamlit.session_state["top1"]:
-        streamlit.session_state["bottom1"] = streamlit.session_state["top1"]
-    if "dress" in streamlit.session_state["top2"]:
-        streamlit.session_state["bottom2"] = streamlit.session_state["top2"]
-    if "dress" in streamlit.session_state["top3"]:
-        streamlit.session_state["bottom3"] = streamlit.session_state["top3"]
-    if "dress" in streamlit.session_state["bottom1"]:
-        streamlit.session_state["top1"] = streamlit.session_state["bottom1"]
-    if "dress" in streamlit.session_state["bottom2"]:
-        streamlit.session_state["top2"] = streamlit.session_state["bottom2"]
-    if "dress" in streamlit.session_state["bottom3"]:
-        streamlit.session_state["top3"] = streamlit.session_state["bottom3"]
     return None
 
 
@@ -101,14 +92,21 @@ def _validate_recommendation(response, clothing):
         ] = f"{response[clothing + '_color'][0]} {response[clothing][0]}"
         streamlit.session_state[
             clothing + "2"
-        ] = f"{response[clothing + '_color'][0]} {response[clothing][1]}"
+        ] = f"{response[clothing + '_color'][1]} {response[clothing][0]}"
         streamlit.session_state[
             clothing + "3"
-        ] = f"{response[clothing + '_color'][1]} {response[clothing][0]}"
+        ] = f"{response[clothing + '_color'][0]} {response[clothing][1]}"
+
+        streamlit.session_state[clothing + "_color1"] = response[clothing + "_color"][0]
+        streamlit.session_state[clothing + "_color2"] = response[clothing + "_color"][1]
+        streamlit.session_state[clothing + "_color3"] = response[clothing + "_color"][0]
     except:
         streamlit.session_state[clothing + "1"] = ""
         streamlit.session_state[clothing + "2"] = ""
         streamlit.session_state[clothing + "3"] = ""
+        streamlit.session_state[clothing + "_color1"] = ""
+        streamlit.session_state[clothing + "_color2"] = ""
+        streamlit.session_state[clothing + "_color3"] = ""
 
     return None
 
@@ -162,19 +160,82 @@ def generate_style_guide():
     # Get response
     response = model.add_user_input(model.customer_insights)
 
-    # Create powerpoint
-    model.generate_powerpoint(response, "./style_guide.pptx")
+    # Check if correctly generated
+    if not response == {}:
+        # Create powerpoint
+        model.generate_powerpoint(response, "./style_guide.pptx")
 
-    # Allow downloading
-    with open("style_guide.pptx", "rb") as file:
-        download_style_button = style2.download_button(
-            label="Download Style Guide",
-            data=file,
-            file_name="style_guide.pptx",
-            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        )
+        # Allow downloading
+        with open("style_guide.pptx", "rb") as file:
+            download_style_button = style2.download_button(
+                label="Download Style Guide",
+                data=file,
+                file_name="style_guide.pptx",
+                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            )
+    else:
+        style2.text("Style guide\nfailed to\ngenerate")
 
-    return True
+    return None
+
+
+def change_image_colors(base_image, image, outerwear_color, top_color, bottom_color):
+    data = numpy.array(base_image)
+
+    if not outerwear_color == "":
+        # Outerwear color
+        r1, g1, b1 = 17, 17, 17  # Original value
+        r2, g2, b2 = _get_rgb(outerwear_color)
+        red, green, blue = data[:, :, 0], data[:, :, 1], data[:, :, 2]
+        mask = (red == r1) & (green == g1) & (blue == b1)
+        data[:, :, :3][mask] = [r2, g2, b2]
+
+    if not top_color == "":
+        # Top color
+        r1, g1, b1 = 34, 34, 34  # Original value
+        r2, g2, b2 = _get_rgb(top_color)
+        red, green, blue = data[:, :, 0], data[:, :, 1], data[:, :, 2]
+        mask = (red == r1) & (green == g1) & (blue == b1)
+        data[:, :, :3][mask] = [r2, g2, b2]
+
+    if not bottom_color == "":
+        # Bottom color
+        r1, g1, b1 = 51, 51, 51  # Original value
+        r2, g2, b2 = _get_rgb(bottom_color)
+        red, green, blue = data[:, :, 0], data[:, :, 1], data[:, :, 2]
+        mask = (red == r1) & (green == g1) & (blue == b1)
+        data[:, :, :3][mask] = [r2, g2, b2]
+
+    # Replace image
+    new_image = Image.fromarray(data)
+    image.image(new_image)
+
+    return None
+
+
+def _get_rgb(color):
+    colors = {
+        "red": [178, 34, 34],
+        "green": [60, 179, 113],
+        "blue": [100, 149, 237],
+        "white": [240, 240, 240],
+        "black": [30, 30, 30],
+        "grey": [211, 211, 211],
+        "beige": [245, 245, 220],
+        "brown": [160, 82, 45],
+        "pink": [255, 182, 193],
+        "orange": [255, 165, 0],
+        "purple": [186, 85, 211],
+        "yellow": [229, 229, 0],
+        "navy": [0, 0, 128],
+        "khaki": [240, 230, 140],
+    }
+    if str(color).lower() in colors:
+        r, g, b = colors[color]
+    else:
+        r, g, b = [211, 211, 211]
+
+    return r, g, b
 
 
 ##################################################
@@ -212,6 +273,24 @@ if "bottom2" not in streamlit.session_state:
     streamlit.session_state["bottom2"] = ""
 if "bottom3" not in streamlit.session_state:
     streamlit.session_state["bottom3"] = ""
+if "outerwear_color1" not in streamlit.session_state:
+    streamlit.session_state["outerwear_color1"] = ""
+if "outerwear_color2" not in streamlit.session_state:
+    streamlit.session_state["outerwear_color2"] = ""
+if "outerwear_color3" not in streamlit.session_state:
+    streamlit.session_state["outerwear_color3"] = ""
+if "top_color1" not in streamlit.session_state:
+    streamlit.session_state["top_color1"] = ""
+if "top_color2" not in streamlit.session_state:
+    streamlit.session_state["top_color2"] = ""
+if "top_color3" not in streamlit.session_state:
+    streamlit.session_state["top_color3"] = ""
+if "bottom_color1" not in streamlit.session_state:
+    streamlit.session_state["bottom_color1"] = ""
+if "bottom_color2" not in streamlit.session_state:
+    streamlit.session_state["bottom_color2"] = ""
+if "bottom_color3" not in streamlit.session_state:
+    streamlit.session_state["bottom_color3"] = ""
 
 # Customer insights
 if "gender" not in streamlit.session_state:
@@ -230,14 +309,23 @@ if "style" not in streamlit.session_state:
 #
 ##################################################
 
-# Title text
-streamlit.title("Personal Clothing Shopper")
+# # Title text
+# streamlit.title("Personal Clothing Shopper")
+
+# Base images
+man_base = Image.open("data/templates/man_base.png")
+woman_base = Image.open("data/templates/woman_base.png")
+unknown_image = Image.open("data/templates/man_unknown.png")
 
 # Recommendation
 clothing1, clothing2, clothing3 = streamlit.columns(3)
+image1 = clothing1.image(unknown_image)
+image2 = clothing2.image(unknown_image)
+image3 = clothing3.image(unknown_image)
 recommendation1 = clothing1.text(f"Outer:\nTop:\nBottom:")
 recommendation2 = clothing2.text(f"Outer:\nTop:\nBottom:")
 recommendation3 = clothing3.text(f"Outer:\nTop:\nBottom:")
+streamlit.markdown("""---""")
 
 # Sidebar button states
 generate_style_button = False
@@ -275,15 +363,84 @@ if user_input:
 
     # Determine what clothing to suggest
     set_recommendations(response)
-    recommendation1.text(
-        f"Outer: {streamlit.session_state['outerwear1']}\nTop: {streamlit.session_state['top1']}\nBottom: {streamlit.session_state['bottom1']}"
+
+    if streamlit.session_state["bottom1"][-5:] in ["dress"]:
+        streamlit.session_state["top1"] = streamlit.session_state["bottom1"]
+        streamlit.session_state["top_color1"] = streamlit.session_state["bottom_color1"]
+        base_image = woman_base
+    elif streamlit.session_state["top1"][-5:] in ["dress", "skirt"]:
+        streamlit.session_state["bottom1"] = streamlit.session_state["top1"]
+        streamlit.session_state["bottom_color1"] = streamlit.session_state["top_color1"]
+        base_image = woman_base
+    elif streamlit.session_state["bottom1"][-5:] in ["skirt"]:
+        base_image = woman_base
+    else:
+        base_image = man_base
+    change_image_colors(
+        base_image,
+        image1,
+        streamlit.session_state["outerwear_color1"],
+        streamlit.session_state["top_color1"],
+        streamlit.session_state["bottom_color1"],
     )
-    recommendation2.text(
-        f"Outer: {streamlit.session_state['outerwear2']}\nTop: {streamlit.session_state['top2']}\nBottom: {streamlit.session_state['bottom2']}"
+
+    if streamlit.session_state["bottom2"][-5:] in ["dress"]:
+        streamlit.session_state["top2"] = streamlit.session_state["bottom2"]
+        streamlit.session_state["top_color2"] = streamlit.session_state["bottom_color2"]
+        base_image = woman_base
+    elif streamlit.session_state["top2"][-5:] in ["dress", "skirt"]:
+        streamlit.session_state["bottom2"] = streamlit.session_state["top2"]
+        streamlit.session_state["bottom_color2"] = streamlit.session_state["top_color2"]
+        base_image = woman_base
+    elif streamlit.session_state["bottom2"][-5:] in ["skirt"]:
+        base_image = woman_base
+    else:
+        base_image = man_base
+    change_image_colors(
+        base_image,
+        image2,
+        streamlit.session_state["outerwear_color2"],
+        streamlit.session_state["top_color2"],
+        streamlit.session_state["bottom_color2"],
     )
-    recommendation3.text(
-        f"Outer: {streamlit.session_state['outerwear3']}\nTop: {streamlit.session_state['top3']}\nBottom: {streamlit.session_state['bottom3']}"
+
+    if streamlit.session_state["bottom3"][-5:] in ["dress"]:
+        streamlit.session_state["top3"] = streamlit.session_state["bottom3"]
+        streamlit.session_state["top_color3"] = streamlit.session_state["bottom_color3"]
+        base_image = woman_base
+    elif streamlit.session_state["top3"][-5:] in ["dress", "skirt"]:
+        streamlit.session_state["bottom3"] = streamlit.session_state["top3"]
+        streamlit.session_state["bottom_color3"] = streamlit.session_state["top_color3"]
+        base_image = woman_base
+    elif streamlit.session_state["bottom3"][-5:] in ["skirt"]:
+        base_image = woman_base
+    else:
+        base_image = man_base
+    change_image_colors(
+        base_image,
+        image3,
+        streamlit.session_state["outerwear_color3"],
+        streamlit.session_state["top_color3"],
+        streamlit.session_state["bottom_color3"],
     )
+
+    if response["exception"]:
+        image1.image = unknown_image
+        image2.image = unknown_image
+        image3.image = unknown_image
+        recommendation1.text = f"Outer:\nTop:\nBottom:"
+        recommendation2.text = f"Outer:\nTop:\nBottom:"
+        recommendation3.text = f"Outer:\nTop:\nBottom:"
+    else:
+        recommendation1.text(
+            f"Outer: {streamlit.session_state['outerwear1']}\nTop: {streamlit.session_state['top1']}\nBottom: {streamlit.session_state['bottom1']}"
+        )
+        recommendation2.text(
+            f"Outer: {streamlit.session_state['outerwear2']}\nTop: {streamlit.session_state['top2']}\nBottom: {streamlit.session_state['bottom2']}"
+        )
+        recommendation3.text(
+            f"Outer: {streamlit.session_state['outerwear3']}\nTop: {streamlit.session_state['top3']}\nBottom: {streamlit.session_state['bottom3']}"
+        )
 
     # Guess some customer insights
     set_demographics(response)

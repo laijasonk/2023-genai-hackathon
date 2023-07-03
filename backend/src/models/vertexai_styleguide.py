@@ -86,7 +86,8 @@ class VertexAIStyleGuide(ChatBot):
             output (dict): Formatted JSON response
         """
 
-        user_input = f"""
+        try:
+            user_input = f"""
 The customer is {input_dict["age"]} years old and {input_dict["gender"]}.
 The customer is in the {input_dict["income"]} income bracket group.
 The customer prefers the {input_dict["style"]} fashion style.
@@ -94,13 +95,18 @@ The customer is considering buying {input_dict["outerwear1"]}, {input_dict["oute
 The customer is considering buying {input_dict["top1"]}, {input_dict["top2"]}, or {input_dict["top3"]} as a top.
 The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2"]}, or {input_dict["bottom3"]} as bottoms.
 """
-        response = self.chain(user_input)
+            response = self.chain(user_input)
 
-        text = str(response["text"])
-        text = re.sub("^```json", "", text)
-        text = re.sub("```$", "", text)
+            text = str(response["text"])
+            text = re.sub("^```json", "", text)
+            text = re.sub("```$", "", text)
 
-        output = json.loads(text)
+            if text:
+                output = json.loads(text)
+            else:
+                output = {}
+        except:
+            output = {}
 
         return output
 
@@ -287,20 +293,20 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             # Collection slide
             slide = slides.slides[4]
             slide.shapes[4].text = response["collection1"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(13)
             slide.shapes[7].text = response["collection2"]
-            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(13)
             slide.shapes[10].text = response["collection3"]
-            slide.shapes[10].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[10].text_frame.paragraphs[0].font.size = Pt(13)
 
             # Testimony slide
             slide = slides.slides[5]
             slide.shapes[4].text = response["testimony1"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[5].text = response["testimony2"]
-            slide.shapes[5].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[5].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[6].text = response["testimony3"]
-            slide.shapes[6].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[6].text_frame.paragraphs[0].font.size = Pt(12)
 
             # Conclusion slide
             slide = slides.slides[6]
@@ -328,20 +334,20 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             # Collection slide
             slide = slides.slides[4]
             slide.shapes[1].text = response["collection1"]
-            slide.shapes[1].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[1].text_frame.paragraphs[0].font.size = Pt(13)
             slide.shapes[4].text = response["collection2"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(13)
             slide.shapes[7].text = response["collection3"]
-            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(13)
 
             # Testimony slide
             slide = slides.slides[5]
             slide.shapes[2].text = response["testimony1"]
-            slide.shapes[2].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[2].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[3].text = response["testimony2"]
-            slide.shapes[3].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[3].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[4].text = response["testimony3"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(14)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(12)
 
             # Conclusion slide
             slide = slides.slides[6]
