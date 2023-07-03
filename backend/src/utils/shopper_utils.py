@@ -31,7 +31,7 @@ def generate_response(chatbot, user_input, past, generated):
 
     chatbot.add_streamlit_history(past, generated)
     response = chatbot.add_user_input(user_input)
-    
+
     print(response)
     return response
 
@@ -40,7 +40,7 @@ def set_recommendations(session_state, response):
     """Change the session_state with latest response.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
         response (dict): LLM response
     Returns:
         session_state (dict): Modified Streamlit session state
@@ -52,11 +52,12 @@ def set_recommendations(session_state, response):
 
     return session_state
 
+
 def _validate_recommendation(session_state, response, clothing):
     """Private method to validate input recommendation.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
         response (dict): LLM response
         clothing (string): Type of clothing (e.g. outerwear, top, bottom)
     Returns:
@@ -104,7 +105,7 @@ def set_demographics(session_state, response):
     """Change the session_state with latest demographics.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
         response (dict): LLM response
     Returns:
         session_state (dict): Modified Streamlit session state
@@ -122,7 +123,7 @@ def _validate_demographics(session_state, response, demographics):
     """Private method to validate input demographics.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
         response (dict): LLM response
         demographics (string): Type of info (e.g. gender, age, income, style)
     Returns:
@@ -141,7 +142,7 @@ def change_image(session_state, man_base, woman_base, image1, image2, image3):
     """Modify the images according to response.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
         man_base (numpy): Base image of a man
         woman_base (numpy): Base image of a woman
         image1 (obj): Streamlit image recommendation 1
@@ -303,11 +304,12 @@ def _get_rgb(color):
 
     return r, g, b
 
+
 def generate_style_guide_response(session_state):
     """Return the response from the style guide model.
 
     Args:
-        session_state (dict): Streamlit session state 
+        session_state (dict): Streamlit session state
     Returns:
         response (dict): Response from LLM
         model (obj): Model object
@@ -345,4 +347,3 @@ def generate_style_guide_response(session_state):
     response = model.add_user_input(model.customer_insights)
 
     return response, model
-

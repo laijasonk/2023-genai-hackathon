@@ -50,6 +50,7 @@ chatbot = vertexai_shopper.VertexAIShopper(config)
 #
 ##################################################
 
+
 def init_session_state(variable, value):
     if str(variable) not in streamlit.session_state:
         streamlit.session_state[str(variable)] = value
@@ -183,10 +184,10 @@ user_input = get_text_button()
 if user_input:
     # Get response from PaLM
     response = utils.generate_response(
-        chatbot, 
-        user_input, 
-        streamlit.session_state["past"], 
-        streamlit.session_state["generated"]
+        chatbot,
+        user_input,
+        streamlit.session_state["past"],
+        streamlit.session_state["generated"],
     )
 
     # Add user input and response to session
@@ -195,10 +196,14 @@ if user_input:
         streamlit.session_state["generated"].append(response["response"])
 
     # Determine what clothing to suggest
-    streamlit.session_state = utils.set_recommendations(streamlit.session_state, response)
+    streamlit.session_state = utils.set_recommendations(
+        streamlit.session_state, response
+    )
 
     # Change the image according to the recommendation
-    streamlit.session_state, image1, image2, image3 = utils.change_image(streamlit.session_state, man_base, woman_base, image1, image2, image3)
+    streamlit.session_state, image1, image2, image3 = utils.change_image(
+        streamlit.session_state, man_base, woman_base, image1, image2, image3
+    )
 
     # Special case for dresses and skirts
     if response["exception"]:
@@ -255,4 +260,3 @@ if streamlit.session_state["generated"]:
                 is_user=True,
                 key=str(i) + "_user",
             )
-

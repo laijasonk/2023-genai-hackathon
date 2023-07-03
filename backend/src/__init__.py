@@ -143,5 +143,6 @@ __all__ = [
     "models.vertexai_shopper",
     "models.vertexai_styleguide",
     "utils",
+    "utils.shopper_utils",
     "vectorstore",
 ]
