@@ -269,4 +269,5 @@ __all__ = [
     "vertexai_basic",
     "vertexai_shopper",
     "vertexai_styleguide",
+    "vertexai_promovideo",
 ]

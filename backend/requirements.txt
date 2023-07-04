@@ -7,6 +7,7 @@ pdoc==13.1.1
 
 # SaaS API
 google-cloud-aiplatform==1.27.0
+google-cloud-texttospeech==2.14.1
 
 # PaLM 2 Dependencies
 langchain==0.0.220
@@ -21,3 +22,4 @@ streamlit-chat==0.1.1
 
 # Multimedia Dependencies
 python-pptx==0.6.21
+moviepy==1.0.3

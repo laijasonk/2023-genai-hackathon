@@ -93,6 +93,7 @@ class VertexAIShopper(ChatBot):
         text = str(response["text"])
         text = re.sub("^```json", "", text)
         text = re.sub("```$", "", text)
+        text = re.sub("[\n\t\*]", "", text)
 
         # Non-elegant way of handling when the LLM misbehaves...
         try:

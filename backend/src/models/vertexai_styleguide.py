@@ -202,9 +202,9 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         collection1 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear1']}, {info['top1']}, and {info['bottom1']}."
         collection2 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear2']}, {info['top2']}, and {info['bottom2']}."
         collection3 = f"Write a brief two sentence product description in for a collection of containing {info['outerwear3']}, {info['top3']}, and {info['bottom3']}."
-        testimony1 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} customer who prefers the {info['style']} fashion style."
-        testimony2 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} {info['age']} year old customer."
-        testimony3 = f"Make up a two sentence customer testimony for a clothing company from a {info['gender']} customer in a {info['income']} income bracket."
+        testimony1 = f"Make up a one sentence customer testimony for a clothing company from a enthusastic {info['gender']} {info['age']} year old customer who is very enthusiastic and excitable."
+        testimony3 = f"Create a different customer testimony for a clothing company from a boring {info['gender']} customer in a {info['income']} income bracket and talks in a mellow way."
+        testimony2 = f"Come up with another new customer testimony for a clothing company from a concise {info['gender']} customer who prefers the {info['style']} fashion style, but is very concise and brief."
         conclusion = f"Write one sentence from the perspective of the company personally thanking this specific customer for their time."
 
         response_schemas = [
@@ -280,11 +280,11 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
 
             # Title
             slide = slides.slides[0]
-            slide.placeholders[1].text = response["tagline"]
+            slide.shapes[2].text = response["tagline"]
 
             # Brand Slide
             slide = slides.slides[2]
-            slide.shapes[2].text = response["brand"]
+            slide.shapes[1].text = response["brand"]
 
             # Style slide
             slide = slides.slides[3]
@@ -293,20 +293,20 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             # Collection slide
             slide = slides.slides[4]
             slide.shapes[4].text = response["collection1"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[7].text = response["collection2"]
-            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[10].text = response["collection3"]
-            slide.shapes[10].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[10].text_frame.paragraphs[0].font.size = Pt(12)
 
             # Testimony slide
             slide = slides.slides[5]
-            slide.shapes[4].text = response["testimony1"]
+            slide.shapes[2].text = response["testimony1"]
+            slide.shapes[2].text_frame.paragraphs[0].font.size = Pt(12)
+            slide.shapes[3].text = response["testimony2"]
+            slide.shapes[3].text_frame.paragraphs[0].font.size = Pt(12)
+            slide.shapes[4].text = response["testimony3"]
             slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(12)
-            slide.shapes[5].text = response["testimony2"]
-            slide.shapes[5].text_frame.paragraphs[0].font.size = Pt(12)
-            slide.shapes[6].text = response["testimony3"]
-            slide.shapes[6].text_frame.paragraphs[0].font.size = Pt(12)
 
             # Conclusion slide
             slide = slides.slides[6]
@@ -318,7 +318,7 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
 
             # Title
             slide = slides.slides[0]
-            slide.placeholders[1].text = response["tagline"]
+            slide.shapes[2].text = response["tagline"]
 
             # Brand Slide
             slide = slides.slides[2]
@@ -334,11 +334,11 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             # Collection slide
             slide = slides.slides[4]
             slide.shapes[1].text = response["collection1"]
-            slide.shapes[1].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[1].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[4].text = response["collection2"]
-            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[4].text_frame.paragraphs[0].font.size = Pt(12)
             slide.shapes[7].text = response["collection3"]
-            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(13)
+            slide.shapes[7].text_frame.paragraphs[0].font.size = Pt(12)
 
             # Testimony slide
             slide = slides.slides[5]

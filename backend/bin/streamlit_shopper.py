@@ -18,6 +18,7 @@ from PIL import Image
 sys.path.append(os.path.abspath("./"))
 from src.models import vertexai_shopper
 from src.models import vertexai_styleguide
+from src.models import vertexai_promovideo
 from src.utils import shopper_utils as utils
 
 
@@ -33,7 +34,7 @@ with open("./data/configs/vertexai_shopper.json", "r") as fn:
 
 # Config streamlit
 streamlit.set_page_config(
-    page_title="Personal Shopper",
+    page_title="Hackathon Demo",
     page_icon=None,
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -65,6 +66,7 @@ def get_text_button():
 def on_submit_text():
     streamlit.session_state["prompt"] = streamlit.session_state["input"]
     streamlit.session_state["input"] = ""
+    streamlit.session_state["no_reload"] = False
     return None
 
 
@@ -88,6 +90,33 @@ def generate_style_guide():
     else:
         style2.text("Style guide\nfailed to\ngenerate")
 
+    streamlit.session_state["no_reload"] = True
+
+    return None
+
+
+def generate_promo_video():
+    # Get a response and accompanying model
+    response, model = utils.generate_promo_video_response(streamlit.session_state)
+
+    # Check if correctly generated
+    if not response == {}:
+        # Create powerpoint
+        model.generate_video(response, "./promo_video.mp4")
+
+        # Allow downloading
+        with open("./promo_video.mp4", "rb") as file:
+            download_style_button = video2.download_button(
+                label="Download Promo Video",
+                data=file,
+                file_name="promo_video.mp4",
+                mime="video/mp4",
+            )
+    else:
+        video2.text("Promo video\nfailed to\ngenerate")
+
+    streamlit.session_state["no_reload"] = True
+
     return None
 
 
@@ -101,6 +130,10 @@ def generate_style_guide():
 init_session_state("past", [])
 init_session_state("generated", [])
 init_session_state("prompt", "")
+
+# State variables
+init_session_state("exception", False)
+init_session_state("no_reload", False)
 
 # Current clothing recommendation
 init_session_state("outerwear1", "")
@@ -150,26 +183,59 @@ clothing1, clothing2, clothing3 = streamlit.columns(3)
 image1 = clothing1.image(unknown_image)
 image2 = clothing2.image(unknown_image)
 image3 = clothing3.image(unknown_image)
-recommendation1 = clothing1.text(f"Outer:\nTop:\nBottom:")
-recommendation2 = clothing2.text(f"Outer:\nTop:\nBottom:")
-recommendation3 = clothing3.text(f"Outer:\nTop:\nBottom:")
+recommendation1 = clothing1.markdown(
+    f"Outer:<br>Top:<br>Bottom:", unsafe_allow_html=True
+)
+recommendation2 = clothing2.markdown(
+    f"Outer:<br>Top:<br>Bottom:", unsafe_allow_html=True
+)
+recommendation3 = clothing3.markdown(
+    f"Outer:<br>Top:<br>Bottom:", unsafe_allow_html=True
+)
+if not streamlit.session_state["exception"]:
+    if (
+        not streamlit.session_state["outerwear1"] == ""
+        and not streamlit.session_state["top1"] == ""
+        and not streamlit.session_state["bottom1"] == ""
+    ):
+        streamlit.session_state, image1, image2, image3 = utils.change_image(
+            streamlit.session_state, man_base, woman_base, image1, image2, image3
+        )
+        (
+            recommendation1,
+            recommendation2,
+            recommendation3,
+        ) = utils.change_recommendation_text(
+            streamlit.session_state, recommendation1, recommendation2, recommendation3
+        )
 streamlit.markdown("""---""")
 
 # Sidebar button states
 generate_style_button = False
 download_style_button = False
+generate_video_button = False
+download_video_button = False
 
 # Sidebar (hidden by default)
 streamlit.sidebar.title("Customer Insights")
-demographics1 = streamlit.sidebar.text(f"Guessed Gender:")
-demographics2 = streamlit.sidebar.text(f"Guessed Age:")
-demographics3 = streamlit.sidebar.text(f"Guessed Income:")
-demographics4 = streamlit.sidebar.text(f"Guessed Style:")
-streamlit.sidebar.markdown("""---""")
+streamlit.sidebar.subheader("Predicted Shopping Preferences")
+demographics1 = streamlit.sidebar.text(f"Gender: {streamlit.session_state['gender']}")
+demographics2 = streamlit.sidebar.text(f"Age: {streamlit.session_state['age']}")
+demographics3 = streamlit.sidebar.text(f"Income: {streamlit.session_state['income']}")
+demographics4 = streamlit.sidebar.text(f"Style: {streamlit.session_state['style']}")
+streamlit.sidebar.markdown("""#""")
+
 style1, style2 = streamlit.sidebar.columns(2)
 generate_style_button = style1.button("Generate Style Guide")
 if generate_style_button:
-    download_style_button = generate_style_guide()
+    generate_style_guide()
+    streamlit.session_state["no_reload"] = True
+
+video1, video2 = streamlit.sidebar.columns(2)
+generate_video_button = video1.button("Generate Promo Video")
+if generate_video_button:
+    generate_promo_video()
+    streamlit.session_state["no_reload"] = True
 
 ##################################################
 #
@@ -181,7 +247,7 @@ if generate_style_button:
 user_input = get_text_button()
 
 # Handle input data
-if user_input:
+if user_input and streamlit.session_state["no_reload"] == False:
     # Get response from PaLM
     response = utils.generate_response(
         chatbot,
@@ -191,7 +257,7 @@ if user_input:
     )
 
     # Add user input and response to session
-    if streamlit.session_state["past"] and streamlit.session_state["generated"]:
+    if "past" in streamlit.session_state and "generated" in streamlit.session_state:
         streamlit.session_state["past"].append(user_input)
         streamlit.session_state["generated"].append(response["response"])
 
@@ -206,35 +272,29 @@ if user_input:
     )
 
     # Special case for dresses and skirts
+    (
+        recommendation1,
+        recommendation2,
+        recommendation3,
+    ) = utils.change_recommendation_text(
+        streamlit.session_state, recommendation1, recommendation2, recommendation3
+    )
     if response["exception"]:
+        streamlit.session_state["exception"] = True
         image1.image = unknown_image
         image2.image = unknown_image
         image3.image = unknown_image
-        recommendation1.text = f"Outer:\nTop:\nBottom:"
-        recommendation2.text = f"Outer:\nTop:\nBottom:"
-        recommendation3.text = f"Outer:\nTop:\nBottom:"
     else:
-        recommendation1.text(
-            f"Outer: {streamlit.session_state['outerwear1']}\nTop: {streamlit.session_state['top1']}\nBottom: {streamlit.session_state['bottom1']}"
-        )
-        recommendation2.text(
-            f"Outer: {streamlit.session_state['outerwear2']}\nTop: {streamlit.session_state['top2']}\nBottom: {streamlit.session_state['bottom2']}"
-        )
-        recommendation3.text(
-            f"Outer: {streamlit.session_state['outerwear3']}\nTop: {streamlit.session_state['top3']}\nBottom: {streamlit.session_state['bottom3']}"
-        )
+        streamlit.session_state["exception"] = False
 
     # Guess some customer insights
     streamlit.session_state = utils.set_demographics(streamlit.session_state, response)
-    demographics1.text(f"Guessed Gender: {streamlit.session_state['gender']}")
-    demographics2.text(f"Guessed Age: {streamlit.session_state['age']}")
-    demographics3.text(f"Guessed Income: {streamlit.session_state['income']}")
-    demographics4.text(f"Guessed Style: {streamlit.session_state['style']}")
+    demographics1.text(f"Gender: {streamlit.session_state['gender']}")
+    demographics2.text(f"Age: {streamlit.session_state['age']}")
+    demographics3.text(f"Income: {streamlit.session_state['income']}")
+    demographics4.text(f"Style: {streamlit.session_state['style']}")
 
-elif generate_style_button:
-    pass
-
-elif download_style_button:
+elif streamlit.session_state["no_reload"] == True:
     pass
 
 else:

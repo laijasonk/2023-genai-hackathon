@@ -142,6 +142,7 @@ __all__ = [
     "models.vertexai_basic",
     "models.vertexai_shopper",
     "models.vertexai_styleguide",
+    "models.vertexai_promovideo",
     "utils",
     "utils.shopper_utils",
     "vectorstore",
