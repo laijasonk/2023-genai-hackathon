@@ -1,7 +1,8 @@
 """
-# Backend
+# fashion.AIsta
 
-Codebase for the Capgemini GenAI Hackathon.
+Codebase for the submission from the Hybrid Intelligence Team 1 in the
+Google Cloud GenAI Hackathon 2023.
 
 ## Prerequisites
 
@@ -61,7 +62,7 @@ module. More robust solutions can be used, but venv has the advantage of
 being easily accessible on most operating systems.
 
 ```
-cd /path/to/repo/backend
+cd /path/to/repo
 
 # Create a new venv directory
 python3 -m venv ./venv
@@ -77,7 +78,7 @@ dependencies into the environment. The pip3 tool was used here, but it
 can vary depending on the chosen environment.
 
 ```
-cd /path/to/repo/backend
+cd /path/to/repo
 
 # Activate the venv profile
 . venv/bin/activate
@@ -88,29 +89,20 @@ pip3 install -r ./requirements.txt
 
 ## Usage
 
-Packages can be used in Python3 scripts and Jupyter notebooks by
-importing the modules. Currently, since SetupTools is not used, the
-developer must add the repository src to the Python3 path.
+The main application is accessible with the prototype Streamlit
+application. As such, the app can be run with the following commands:
 
 ```
-# Load the modules
-sys.path.append(os.path.abspath("./"))
-from src.models import vertexai_basic
+cd /path/to/repo
 
-# Load the config
-with open("data/configs/vertexai_basic.json", "r") as fn:
-    config = json.load(fn)
+# Activate the venv profile
+. venv/bin/activate
 
-# Instantiate chatbot
-chatbot = vertexai_basic.VertexAIBasic(config)
+# Run the Streamlit app
+streamlit bin/streamlit_shopper.py
 
-# Example loop to get user input
-user_input = ""
-while not user_input == "quit":
-    response = chatbot.add_user_input(user_input)
-    print(f"AI: {response}")
-    print()
-    user_input = input("Human: ")
+# Open a browser and navigate to the URL 
+#   (e.g. https://localhost:8501)
 ```
 
 ## Documentation
@@ -121,7 +113,7 @@ generated from Google-style Python docstrings with the `pdoc` package as
 shown below.
 
 ```
-cd /path/to/repo/backend
+cd /path/to/repo
 
 # OPTIONAL: Activate venv profile if using venv
 . venv/bin/activate

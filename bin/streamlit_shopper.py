@@ -306,7 +306,6 @@ else:
 
 # Display the chatbot message history
 if streamlit.session_state["generated"]:
- 
     for i in range(len(streamlit.session_state["generated"]) - 1, -1, -1):
         message(
             streamlit.session_state["generated"][i],
