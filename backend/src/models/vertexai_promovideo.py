@@ -9,6 +9,7 @@ import sys
 import logging
 import json
 import re
+import math
 
 from langchain.embeddings import VertexAIEmbeddings
 from langchain.chains import LLMChain
@@ -195,7 +196,7 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
 
         info = self.customer_insights
 
-        pitch = f"Write a short three sentence pitch from a clothing company that would appeal to a {info['age']} year old {info['gender']} customers with {info['income']} income and a preference for {info['style']} fashion."
+        pitch = f"Write a short two sentence pitch from a clothing company that would appeal to a {info['age']} year old {info['gender']} customers with {info['income']} income and a preference for {info['style']} fashion."
 
         response_schemas = [
             ResponseSchema(
@@ -224,6 +225,7 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         """
 
         script = response["pitch"]
+        speaking_rate = 1.5
 
         # Audio
         client = texttospeech.TextToSpeechClient()
@@ -233,7 +235,7 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             name="en-US-Studio-O",
         )
         audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.LINEAR16, speaking_rate=1
+            audio_encoding=texttospeech.AudioEncoding.LINEAR16, speaking_rate=speaking_rate,
         )
         response = client.synthesize_speech(
             request={"input": input_text, "voice": voice, "audio_config": audio_config}
@@ -247,13 +249,14 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         # Adjust length depending on audio
         fps = 30
         fx_speed = 2 / int(audioclip.duration)
-        clip_length = int(int(audioclip.duration) / 3)
+        clip_length = math.ceil(math.ceil(audioclip.duration) / 3.0)
         crossfade = int(int(audioclip.duration) / 5)
         duration = clip_length + crossfade
 
         # Video
         txt1 = TextClip(
-            f"{self.customer_insights['outerwear1']}\n{self.customer_insights['top1']}\n{self.customer_insights['bottom1']}",
+            #f"{self.customer_insights['outerwear1']}\n{self.customer_insights['top1']}\n{self.customer_insights['bottom1']}",
+            f"{self.customer_insights['outerwear1']}, {self.customer_insights['top1']},\n{self.customer_insights['bottom1']}",
             fontsize=24,
             color="black",
         )
@@ -261,15 +264,19 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         txt1_box = ColorClip(
             size=(image_width + 20, image_height + 20), color=(200, 200, 230)
         )
-        txt1 = (
-            txt1.set_pos("center")
-            .margin(bottom=100, right=150, opacity=0)
+        txt1 = (txt1
+            #.margin(bottom=100, right=150, opacity=0)
+            .set_pos("center")
+            .margin(top=350, opacity=0)
+            #.set_position((0.0, 0.40), relative=True)
             .set_duration(duration)
         )
-        txt1_box = (
-            txt1_box.set_opacity(0.5)
+        txt1_box = (txt1_box
+            .set_opacity(0.75)
             .set_pos("center")
-            .margin(bottom=100, right=150, opacity=0)
+            .margin(top=350, opacity=0)
+            #.margin(bottom=100, right=150, opacity=0)
+            #.set_position((0.0, 0.40), relative=True)
             .set_duration(duration)
         )
 
@@ -285,16 +292,28 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         clip1.fps = fps
 
         txt2 = TextClip(
-            f"{self.customer_insights['outerwear2']}\n{self.customer_insights['top2']}\n{self.customer_insights['bottom2']}",
-            fontsize=24,
+            #f"{self.customer_insights['outerwear2']}\n{self.customer_insights['top2']}\n{self.customer_insights['bottom2']}",
+            f"{self.customer_insights['outerwear2']}, {self.customer_insights['top2']},\n{self.customer_insights['bottom2']}",
+            fontsize=20,
             color="black",
         )
         image_width, image_height = txt2.size
         txt2_box = ColorClip(
             size=(image_width + 20, image_height + 20), color=(200, 200, 230)
         )
-        txt2 = txt2.set_pos("center").set_duration(duration)
-        txt2_box = txt2_box.set_opacity(0.5).set_pos("center").set_duration(duration)
+        txt2 = (txt2
+            #.set_pos("center", "bottom")
+            .set_pos("center")
+            .margin(top=350, opacity=0)
+            .set_duration(duration)
+        )
+        txt2_box = (txt2_box
+            .set_opacity(0.75)
+            .set_pos("center")
+            .margin(top=350, opacity=0)
+            #.set_pos("center", "bottom")
+            .set_duration(duration)
+        )
 
         img2 = Image.open("data/templates/clothing2.png")
         img2_array = numpy.array(img2)[:, :, :3]
@@ -308,23 +327,28 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         clip2.fps = fps
 
         txt3 = TextClip(
-            f"{self.customer_insights['outerwear3']}\n{self.customer_insights['top3']}\n{self.customer_insights['bottom3']}",
-            fontsize=24,
+            #f"{self.customer_insights['outerwear3']}\n{self.customer_insights['top3']}\n{self.customer_insights['bottom3']}",
+            f"{self.customer_insights['outerwear3']}, {self.customer_insights['top3']},\n{self.customer_insights['bottom3']}",
+            fontsize=20,
             color="black",
         )
         image_width, image_height = txt3.size
         txt3_box = ColorClip(
             size=(image_width + 20, image_height + 20), color=(200, 200, 230)
         )
-        txt3 = (
-            txt3.set_pos("center")
-            .margin(top=100, left=150, opacity=0)
+        txt3 = (txt3
+            #.set_pos("center", "bottom")
+            #.margin(top=100, left=150, opacity=0)
+            .set_pos("center")
+            .margin(top=350, opacity=0)
             .set_duration(duration)
         )
-        txt3_box = (
-            txt3_box.set_opacity(0.5)
+        txt3_box = (txt3_box
+            .set_opacity(0.75)
             .set_pos("center")
-            .margin(top=100, left=150, opacity=0)
+            .margin(top=350, opacity=0)
+            #.set_pos("center", "bottom")
+            #.margin(top=100, left=150, opacity=0)
             .set_duration(duration)
         )
 

@@ -13,11 +13,12 @@ google-cloud-texttospeech==2.14.1
 langchain==0.0.220
 pycocotools==2.0.6
 
-# # Stable Diffusion Dependencies
-# keras-cv
-# tensorflow
+# Stable Diffusion Dependencies
+#diffusers
+#torch
+#transformers
 
-# Prototyping UI
+# Prototype UI
 streamlit-chat==0.1.1
 
 # Multimedia Dependencies
