@@ -10,6 +10,7 @@ import logging
 import json
 import re
 import math
+import numpy
 
 from langchain.embeddings import VertexAIEmbeddings
 from langchain.chains import LLMChain
@@ -18,11 +19,16 @@ from langchain import PromptTemplate
 from langchain.output_parsers import StructuredOutputParser
 from langchain.output_parsers import ResponseSchema
 
+from google.cloud import aiplatform
 from google.cloud import texttospeech
-import moviepy.video.io.ImageSequenceClip
+
 from moviepy.editor import *
+import moviepy.video.io.ImageSequenceClip
+
 from PIL import Image
-import numpy
+from io import BytesIO
+import base64
+
 
 # Path must be defined (e.g. PYTHONPATH="/path/to/repo/backend")
 sys.path.append(os.path.abspath("../../../"))
@@ -224,6 +230,8 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             None
         """
 
+        img1_array, img2_array, img3_array = self.generate_images()
+
         script = response["pitch"]
         speaking_rate = 1.5
 
@@ -281,8 +289,8 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             .set_duration(duration)
         )
 
-        img1 = Image.open("data/templates/clothing1.png")
-        img1_array = numpy.array(img1)[:, :, :3]
+        # img1 = Image.open("data/templates/clothing1.png")
+        # img1_array = numpy.array(img1)[:, :, :3]
 
         def clip1_fun(t):
             return numpy.roll(img1_array, int(t * fx_speed * fps), axis=1)
@@ -317,8 +325,8 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             .set_duration(duration)
         )
 
-        img2 = Image.open("data/templates/clothing2.png")
-        img2_array = numpy.array(img2)[:, :, :3]
+        # img2 = Image.open("data/templates/clothing2.png")
+        # img2_array = numpy.array(img2)[:, :, :3]
 
         def clip2_fun(t):
             return numpy.roll(img2_array, -int(t * fx_speed * fps), axis=1)
@@ -355,8 +363,8 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
             .set_duration(duration)
         )
 
-        img3 = Image.open("data/templates/clothing3.png")
-        img3_array = numpy.array(img3)[:, :, :3]
+        # img3 = Image.open("data/templates/clothing3.png")
+        # img3_array = numpy.array(img3)[:, :, :3]
 
         def clip3_fun(t):
             return numpy.roll(img3_array, int(t * fx_speed * fps), axis=1)
@@ -383,3 +391,95 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         videoclip.write_videofile(mp4_filename)
 
         return None
+
+    def generate_images(self):
+        """Generate a images for promo video.
+
+        Args:
+            None
+        Returns:
+            image1 (numpy): Array of generated image
+            image2 (numpy): Array of generated image
+            image3 (numpy): Array of generated image
+        """
+
+        # GCP details
+        PROJECT_ID = "gen-hybrid-intelligence-team-1"
+        REGION = "us-central1"  # @param {type:"string"}
+        GCS_BUCKET = "model_storage_bucket_jeremy"
+        ENDPOINT = 'projects/47448272174/locations/us-central1/endpoints/5040438378655383552'
+        
+        # Init system
+        aiplatform.init(project=PROJECT_ID, location=REGION, staging_bucket=GCS_BUCKET)
+        ImageEndpoint = aiplatform.Endpoint(ENDPOINT)
+
+        # Helper functions
+        def image_to_base64(image, format="JPEG"):
+            buffer = BytesIO()
+            image.save(buffer, format=format)
+            image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            return image_str
+
+        def base64_to_image(image_str):
+            image = Image.open(BytesIO(base64.b64decode(image_str)))
+            return image
+            
+        def text_guided_image_inpainting(prompt: str, init_image: Image.Image, mask_image: Image.Image, num_inference_steps=50) -> Image.Image:
+            init_image = init_image.resize((512, 512))
+            mask_image = mask_image.resize((512, 512))
+            instances = [
+                {
+                    "prompt": prompt,
+                    "image": image_to_base64(init_image),
+                    "mask_image": image_to_base64(mask_image),
+                    "num_inference_steps": num_inference_steps
+                },
+            ]
+            response = ImageEndpoint.predict(instances=instances)
+            images = [base64_to_image(image) for image in response.predictions]
+            new_image = init_image.copy()
+            new_image.paste(images[0], mask=mask_image.convert('L'))
+            return new_image
+
+        model_image = Image.open("./data/templates/model_photo.png").convert("RGB")
+        rectangle_mask = Image.open("./data/templates/rectangle_mask.png").convert("L")
+
+        images = []
+        for idx in range(1, 4):
+            if self.customer_insights[f'bottom{idx}'][-5:] == "dress":
+                out = self.customer_insights[f"outerwear{idx}"]
+                bot = self.customer_insights[f"bottom{idx}"]
+                prompt = f"Outerwear: {out}. BREAK Underneath: {bot}."
+            else:
+                out = self.customer_insights[f"outerwear{idx}"]
+                top = self.customer_insights[f"top{idx}"]
+                bot = self.customer_insights[f"bottom{idx}"]
+                prompt = f"Outerwear: {out}. BREAK Underneath: {top}. BREAK Bottom: {bot}."
+            print(prompt)
+
+            # Base run
+            iteration1 = text_guided_image_inpainting(
+                prompt=prompt,
+                init_image=model_image,
+                mask_image=rectangle_mask,
+            )
+
+            # Repeat to increase accuracy
+            iteration2 = text_guided_image_inpainting(
+                prompt=prompt,
+                init_image=iteration1,
+                mask_image=rectangle_mask,
+            )
+
+            # # Repeat to increase accuracy
+            # iteration3 = text_guided_image_inpainting(
+            #     prompt=prompt,
+            #     init_image=iteration2,
+            #     mask_image=rectangle_mask,
+            # )
+
+            images.append(iteration2)
+            # images.append(iteration3)
+        
+        return images[0], images[1], images[2]
+

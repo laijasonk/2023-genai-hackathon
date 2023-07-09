@@ -34,7 +34,7 @@ with open("./data/configs/vertexai_shopper.json", "r") as fn:
 
 # Config streamlit
 streamlit.set_page_config(
-    page_title="Hackathon Demo",
+    page_title="fashion.AIsta",
     page_icon=None,
     layout="centered",
     initial_sidebar_state="collapsed",
