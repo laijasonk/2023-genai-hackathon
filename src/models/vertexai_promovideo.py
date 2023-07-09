@@ -407,8 +407,10 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         PROJECT_ID = "gen-hybrid-intelligence-team-1"
         REGION = "us-central1"  # @param {type:"string"}
         GCS_BUCKET = "model_storage_bucket_jeremy"
-        ENDPOINT = 'projects/47448272174/locations/us-central1/endpoints/5040438378655383552'
-        
+        ENDPOINT = (
+            "projects/47448272174/locations/us-central1/endpoints/5040438378655383552"
+        )
+
         # Init system
         aiplatform.init(project=PROJECT_ID, location=REGION, staging_bucket=GCS_BUCKET)
         ImageEndpoint = aiplatform.Endpoint(ENDPOINT)
@@ -423,8 +425,13 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
         def base64_to_image(image_str):
             image = Image.open(BytesIO(base64.b64decode(image_str)))
             return image
-            
-        def text_guided_image_inpainting(prompt: str, init_image: Image.Image, mask_image: Image.Image, num_inference_steps=50) -> Image.Image:
+
+        def text_guided_image_inpainting(
+            prompt: str,
+            init_image: Image.Image,
+            mask_image: Image.Image,
+            num_inference_steps=50,
+        ) -> Image.Image:
             init_image = init_image.resize((512, 512))
             mask_image = mask_image.resize((512, 512))
             instances = [
@@ -432,13 +439,13 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
                     "prompt": prompt,
                     "image": image_to_base64(init_image),
                     "mask_image": image_to_base64(mask_image),
-                    "num_inference_steps": num_inference_steps
+                    "num_inference_steps": num_inference_steps,
                 },
             ]
             response = ImageEndpoint.predict(instances=instances)
             images = [base64_to_image(image) for image in response.predictions]
             new_image = init_image.copy()
-            new_image.paste(images[0], mask=mask_image.convert('L'))
+            new_image.paste(images[0], mask=mask_image.convert("L"))
             return new_image
 
         model_image = Image.open("./data/templates/model_photo.png").convert("RGB")
@@ -446,7 +453,7 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
 
         images = []
         for idx in range(1, 4):
-            if self.customer_insights[f'bottom{idx}'][-5:] == "dress":
+            if self.customer_insights[f"bottom{idx}"][-5:] == "dress":
                 out = self.customer_insights[f"outerwear{idx}"]
                 bot = self.customer_insights[f"bottom{idx}"]
                 prompt = f"Outerwear: {out}. BREAK Underneath: {bot}."
@@ -454,7 +461,9 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
                 out = self.customer_insights[f"outerwear{idx}"]
                 top = self.customer_insights[f"top{idx}"]
                 bot = self.customer_insights[f"bottom{idx}"]
-                prompt = f"Outerwear: {out}. BREAK Underneath: {top}. BREAK Bottom: {bot}."
+                prompt = (
+                    f"Outerwear: {out}. BREAK Underneath: {top}. BREAK Bottom: {bot}."
+                )
             print(prompt)
 
             # Base run
@@ -480,6 +489,5 @@ The customer is considering buying {input_dict["bottom1"]}, {input_dict["bottom2
 
             images.append(iteration2)
             # images.append(iteration3)
-        
-        return images[0], images[1], images[2]
 
+        return images[0], images[1], images[2]

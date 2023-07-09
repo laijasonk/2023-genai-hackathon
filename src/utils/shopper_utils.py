@@ -311,7 +311,7 @@ def _change_colors(base_image, image, out_color, top_color, bot_color, image_fn)
 
     # Replace image
     new_image = Image.fromarray(data)
-    #new_image.save(image_fn)
+    # new_image.save(image_fn)
 
     return image.image(new_image)
 
